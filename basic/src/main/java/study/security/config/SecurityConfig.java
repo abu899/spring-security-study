@@ -34,6 +34,7 @@ public class SecurityConfig {
         // 인가
         http
                 .authorizeRequests()
+                .antMatchers("/loginPage").permitAll()
                 .antMatchers("/user").hasRole("USER")
                 .antMatchers("/admin/pay").hasRole("ADMIN")
                 .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")
@@ -125,5 +126,18 @@ public class SecurityConfig {
                 .sessionManagement()
                 .maximumSessions(1)
                 .maxSessionsPreventsLogin(true);
+    }
+
+    private void addExceptionHandlingFilter(HttpSecurity http) throws Exception {
+        http
+                .exceptionHandling()
+                .authenticationEntryPoint((request, response, authException) -> {
+                    System.out.println("fail authentication");
+                    response.sendRedirect("/loginPage");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    System.out.println("fail authorization");
+                    response.sendRedirect("/denied");
+                });
     }
 }

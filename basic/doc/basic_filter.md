@@ -152,3 +152,28 @@ http
 
 <p align="center"><img src="./img/basic_filter_6.png" width="80%"></p>
 
+### ExceptionTranslationFilter
+
+<p align="center"><img src="./img/basic_filter_7.png" width="80%"></p>
+
+- AuthenticationException
+  - 인증 예외 처리 
+  1. `AuthenticationEntryPoint`를 호출
+     - 로그인 페이지 이동, 401 오류코드 전달
+  2. 인증 예외가 발생하기 전의 Request 를 저장
+     - RequestCache
+     - 이전 요청 정보를 세션에 저장하고 이를 꺼내오는 캐시 메커니즘
+- AccessDeniedException
+  - 인가 예외 처리
+  - `AccessDeniedHandler`에서 예외 처리하도록 제공
+
+```text
+http
+    .exceptionHandling()
+```
+
+- authenticationEntryPoint(authenticationEntryPoint())
+  - 인증 실패 시 처리
+- accessDeniedHandler(accessDeniedHandler())
+  - 인가 실패 시 처리
+
