@@ -95,3 +95,36 @@ SecurityContext 객체의 생성, 저장 및 조회를 위한 클래스
     - 실제 인증 처리를 진행하지 않는다!
   - 부모 ProviderManager 를 설정하여 여러 provider 를 탐색할 수 있다. 
     - 자신이 처리할 수 없는 경우, parent 를 지정해 다른 매니저를 지정한다
+
+### Authentication Provider
+
+<p align="center"><img src="./img/arch_8.png" width="80%"></p>
+
+매니저로 부터 위임받은 인증 처리를 하는 실질적인 클래스이며, 핵심적인 클래스라고 볼 수 있다.
+
+## Authorization 
+
+인증(Authentication)을 받은 사용자가 어떤 리소스에 접근할 때 허가되는지를 증명하는 것이 인가(Authorization).
+
+- 스프링 시큐리티가 지원하는 권한 계층
+  - 웹 계층
+    - URL 요청에 따른 메뉴 혹은 화면 단위 보안(/user)
+  - 서비스 계층
+    - 화면 단위가 아닌 메소드 기능 단위의 보안(user())
+  - 도메인 계층
+    - 객체 단위 레벨 보안
+    - 접근 제어 목록
+
+### FilterSecurityInterceptor
+
+<p align="center"><img src="./img/arch_9.png" width="80%"></p>
+
+스프링 시큐리티가 제공하는 필터 중 가장 마지막에 위치한 필터로 요청에 대한 승인, 거부 여부를 최종적으로 결정한다.
+만약 인증없이 자원에 접근을 시도한 경우 `AuthenticationException`, 인증 후 자원에 접근할 권한이 없다면 
+`AccessDeniedException`을 발생시킨다.
+
+- 권한 제어 방식 중 HTTP 자원의 보안(웹 계층)을 처리하는 필터이다.
+- 실제 권한 처리를 `AccessDecisionManager`에 위임한다.
+  - `SecurityMetaSource`에서 ROLE_USER, ROLE_XXX 같은 권한이 필요한지를 확인해 `AccessDecisionManager`에 넘긴다
+
+
