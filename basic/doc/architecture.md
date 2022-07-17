@@ -127,4 +127,50 @@ SecurityContext 객체의 생성, 저장 및 조회를 위한 클래스
 - 실제 권한 처리를 `AccessDecisionManager`에 위임한다.
   - `SecurityMetaSource`에서 ROLE_USER, ROLE_XXX 같은 권한이 필요한지를 확인해 `AccessDecisionManager`에 넘긴다
 
+### AccessDecisionManager
 
+<p align="center"><img src="./img/arch_10.png" width="80%"></p>
+
+인증, 요청, 권한 정보를 이용해 사용자의 자원에 대한 접근을 최종결정하는 주체이다. 매니저는 다수의 `Voter`를 가지고 있으며,
+Voter 들로 부터 접근에 대한 값을 리턴받아 접근을 결정하게 된다.
+
+- 결정의 세가지 유형
+  1. AffirmativeBased(Default)
+     - voter 중 하나라도 접근을 허가한다면, 접근 허용
+  2. ConsensusBased
+     - 다수표 방식
+     - 동수 일 경우 기본 전략은 접근허용이지만 접근거부로 변경 가능하다.
+  3. UnanimousBased
+     - 모든 voter 가 접근허가로 판단해야, 접근 허용
+     - 즉, 하나라도 접근거부한다면 접근 거부
+
+### AccessDecisionVoter
+
+각각의 voter 들이 사용자 리소스 요청에 대한 접근 자격을 결정해 `AccessDecisionManager`로 반환한다.
+
+- Voter 가 권한 부여 과정에서 판단하는 자료
+  - Authentication: 인증 정보
+  - FilterInvocation: 요청 정보(`antMatcher("/user)`)
+  - ConfigAttributes: 권한 정보(`hasRole("USER)`)
+- 결정 결과
+  - ACCESS_GRANTED: 접근 허용 (1)
+  - ACCESS_DENIED: 접근 거부 (-1)
+  - ACCESS_ABSTAIN: 접근 보류 (0)
+    - 해당 voter 가 해당 요청에 대해 결과를 내릴 수 없는 경우
+  
+## 정리
+
+<p align="center"><img src="./img/arch_11.png" width="80%"></p>
+
+1. `DelegationFilterProxy`(Servlet Filter)가 `FilterChainProxy`로 요청을 위임한다.
+2. `SecurityConfig`에서 생성한 필터를 `FilterChainProxy`가 순서대로 실행한다.
+3. `SecurityContextPersistenceFilter`가 내부의 `SecurityContextRepository`에 `SecurityContext`를 생성하고 저장한다.
+만약, `loadContext`에서 인증한 결과가 없다면 컨텍스트를 새로 생성하고 `SecurityContextHolder`에 저장한다.
+4. `UsernamePasswordAuthenticationFilter`에서 `Authentication` 객체를 만들고 id, pw 를 저장하고 `AuthenticationManger`에게
+인증 처리를 맡기고 매니저는 `AuthenticationProvider`에게 실제 인증을 위임한다.
+5. 인증에 성공한 경우 `SecurityContextHolder` 내 컨텍스트에 성공 결과를 담은 인증 객체를 저장하고 그 컨텍스트를 다시 `Session`에 저장한다.
+6. 성공 후, `SuccessHandler`에서 지정한 행동을 진행한다.
+7. 클라이언트 응답 전, `clear SecurityContext` 를 통해 초기화를 진행한다.
+8. 인증 성공 후 접근시, `loadContext`를 통해 컨텍스트를 불러와 `SecurityContextHolder`에 저장하고 이후 과정이 진행된다.
+9. `FilterSecurityInterceptor`까지 진행되어 인증 객체를 전달받아 지정된 리소스에 대해
+   `AccessDecisionManager`와 `AccessDecisionVoter`를 통해 인가를 진행한다
