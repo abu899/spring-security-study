@@ -1,5 +1,6 @@
 package core.spring.security.config;
 
+import core.spring.security.handler.CustomAccessDeniedHandler;
 import core.spring.security.provider.CustomAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 import javax.sql.DataSource;
 
@@ -44,6 +45,13 @@ public class SecurityConfig {
     private AuthenticationDetailsSource formDetailsSource;
 
     @Bean
+    public AccessDeniedHandler customAccessDeniedHandler() {
+        CustomAccessDeniedHandler customAccessDeniedHandler = new CustomAccessDeniedHandler();
+        customAccessDeniedHandler.setErrorPage("/denied");
+        return customAccessDeniedHandler;
+    }
+
+    @Bean
     public SecurityFilterChain httpSecurityFilter(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
@@ -62,6 +70,10 @@ public class SecurityConfig {
                 .authenticationDetailsSource(formDetailsSource)
                 .permitAll()
         ;
+
+        http
+                .exceptionHandling()
+                .accessDeniedHandler(customAccessDeniedHandler());
 
         return http.build();
     }
