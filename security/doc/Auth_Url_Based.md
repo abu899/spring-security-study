@@ -22,3 +22,16 @@
   - 즉, 인가없이 리소스에 접근해버리는 문제가 생김
 - `AccessDecisionManager`에 전달하여 인가처리 수행
 - 사용자의 모든 요청마다 요청정보에 매핑된 권한 정보를 확인한다
+
+### PermitAllFilter
+
+<p align="center"><img src="./img/core_3.png" width="80%"></p>
+
+인증 및 권한 심사를 할 필요없는 자원(`/, /home, /login`)등을 미리 설정해서 리소스에 바로 접근 가능하게 하는 필터.
+즉 인증 및 인가를 할 필요없는 리소스에 대해 불필요한 검사 과정을 생략할 수 있다.
+
+### Role Hierarchy
+
+<p align="center"><img src="./img/core_4.png" width="80%"></p>
+
+권한에 계층을 도입해, 상위 계층은 하위 계층의 role 의 자원에 접근 가능하게 변경.
